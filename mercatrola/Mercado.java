@@ -1,5 +1,7 @@
 package mercatrola;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -13,19 +15,26 @@ public class Mercado {
 			colas[i]=new LinkedBlockingQueue<>();
 		}
 		
+		
+		List<Cliente> listaClientes =new ArrayList<>();
+		
+		Thread[] clientes=new Thread[nClientes];
+		for(int i=0;i<nClientes;i++) {
+			BlockingQueue<Cliente> colaAsignada=colas[i%nCajas];
+			
+			Cliente c=new Cliente(i,colaAsignada);
+			listaClientes.add(c);
+			
+			clientes[i]=new Thread(c,"Cliente "+i);
+			clientes[i].start();
+		}
+		
 		Thread[] cajas=new Thread[nCajas];
 		for(int i=0;i<nCajas;i++) {
 			cajas[i]=new Thread(new Caja(colas[i]),"Caja "+i);
 			cajas[i].start();
 		}
 		
-		Thread[] clientes=new Thread[nClientes];
-		for(int i=0;i<nClientes;i++) {
-			BlockingQueue<Cliente> colaAsignada=colas[i%nCajas];
-			
-			clientes[i]=new Thread(new Cliente(i,colaAsignada),"Cliente "+i);
-			clientes[i].start();
-		}
 		
 		for (Thread thread : clientes) {
 			try {
@@ -46,6 +55,21 @@ public class Mercado {
 		}
 		
 		System.out.println("Mercatrola cierra sus puertas.");
+		
+		List<Long> tiemposEspera=new ArrayList<>();
+		for(Cliente c: listaClientes) {
+			tiemposEspera.add(c.gettWait());
+		}
+		
+		long max=tiemposEspera.stream().mapToLong(v -> v).max().orElse(0);
+		long min=tiemposEspera.stream().mapToLong(v -> v).min().orElse(0);
+		double avg=tiemposEspera.stream().mapToLong(v -> v).average().orElse(0);
+		
+		System.out.println("RESULTADOS");
+		System.out.println("Tiempo de espera máximo: "+max+" ms.");
+		System.out.println("Tiempo de espera mínimo: "+min+" ms.");
+		System.out.println("Tiempo de espera medio: "+avg+" ms.");
+		
 	}
 	
 	public static void main(String[] args) {

@@ -6,13 +6,13 @@ public class Cliente implements Runnable{
 	private int id;
 	private final BlockingQueue<Cliente> cola;
 	private long tArrival; 
+	private long tServiceStart;
 
 	public Cliente(int id,BlockingQueue<Cliente> cola) {
 		super();
 		this.id=id;
 		this.cola=cola;
 	}
-
 
 	@Override
 	public void run() {
@@ -38,5 +38,16 @@ public class Cliente implements Runnable{
 		return id;
 	}
 
+	public long gettServiceStart() {
+		return tServiceStart;
+	}
+
+	public void settServiceStart(long tServiceStart) {
+		this.tServiceStart = tServiceStart;
+	}
+
+	public long gettWait() {
+		return this.tServiceStart-this.tArrival;
+	}
 	
 }
